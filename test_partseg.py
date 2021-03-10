@@ -93,7 +93,7 @@ def main(args):
         for batch_id, (points, label, target) in tqdm(enumerate(testDataLoader), total=len(testDataLoader), smoothing=0.9):
             batchsize, num_point, _ = points.size()
             cur_batch_size, NUM_POINT, _ = points.size()
-            points, label, target = points.float().cuda(), label.long().cuda(), target.long().cuda()
+            points, label, target = points.float().cuda(), label.long().cuda(), target.long().cuda()            
             points = points.transpose(2, 1)
             classifier = classifier.eval()
             vote_pool = torch.zeros(target.size()[0], target.size()[1], num_part).cuda()

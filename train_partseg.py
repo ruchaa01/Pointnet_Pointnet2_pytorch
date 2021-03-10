@@ -167,6 +167,17 @@ def main(args):
         '''learning one epoch'''
         for i, data in tqdm(enumerate(trainDataLoader), total=len(trainDataLoader), smoothing=0.9):
             points, label, target = data
+
+            tensor1=points.cpu().data.numpy()
+            np.save('points_train.npy',tensor1)
+
+            tensor2=label.cpu().data.numpy()
+            np.save('label_train.npy',tensor2)
+
+            tensor3=target.cpu().data.numpy()
+            np.save('target_train.npy',tensor3)
+
+
             points = points.data.numpy()
             points[:,:, 0:3] = provider.random_scale_point_cloud(points[:,:, 0:3])
             points[:,:, 0:3] = provider.shift_point_cloud(points[:,:, 0:3])
@@ -177,8 +188,16 @@ def main(args):
             classifier = classifier.train()
             seg_pred, trans_feat = classifier(points, to_categorical(label, num_classes))
             seg_pred = seg_pred.contiguous().view(-1, num_part)
+
+            tensor4 = seg_pred.cpu().data.numpy()
+            np.save('seg_pred_train.npy',tensor4)
+
             target = target.view(-1, 1)[:, 0]
             pred_choice = seg_pred.data.max(1)[1]
+
+            tensor5=pred_choice.cpu().data.numpy()
+            np.save('pred_choice_train.npy',tensor5)
+
             correct = pred_choice.eq(target.data).cpu().sum()
             mean_correct.append(correct.item() / (args.batch_size * args.npoint))
             loss = criterion(seg_pred, target, trans_feat)
@@ -202,9 +221,27 @@ def main(args):
             for batch_id, (points, label, target) in tqdm(enumerate(testDataLoader), total=len(testDataLoader), smoothing=0.9):
                 cur_batch_size, NUM_POINT, _ = points.size()
                 points, label, target = points.float().cuda(), label.long().cuda(), target.long().cuda()
+                
+                tensor6=points.cpu().data.numpy()
+                np.save('points_test.npy',tensor6)
+
+                tensor7=label.cpu().data.numpy()
+                np.save('label_test.npy',tensor2)
+
+                tensor8=target.cpu().data.numpy()
+                np.save('target_test.npy',tensor3)
+
+                
                 points = points.transpose(2, 1)
                 classifier = classifier.eval()
                 seg_pred, _ = classifier(points, to_categorical(label, num_classes))
+                new_seg = seg_pred
+                new_seg= new_seg.contiguous().view(-1, num_part)
+                new_pred_choice = new_seg.data.max(1)[1]
+             
+                tensor9=new_pred_choice.cpu().data.numpy()
+                np.save('pred_choice_test.npy',tensor9)
+
                 cur_pred_val = seg_pred.cpu().data.numpy()
                 cur_pred_val_logits = cur_pred_val
                 cur_pred_val = np.zeros((cur_batch_size, NUM_POINT)).astype(np.int32)
